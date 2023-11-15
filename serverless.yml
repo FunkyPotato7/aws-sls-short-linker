@@ -1,0 +1,66 @@
+service: aws-sls-short-linker
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, self:custom.default}
+  environment:
+    TABLE_NAME: Links
+    ACCESS_KEY_ID: ${env.ACCESS_KEY_ID}
+    SECRET_ACCESS_KEY: ${env.SECRET_ACCESS_KEY}
+    REGION: ${env.REGION}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: arn:aws:dynamodb:us-east-1:992909816699:table/Links
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dotenv-plugin
+  - serverless-offline
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+
+functions:
+  createLink:
+    handler: src/Links/create-link.handler
+    events:
+      - httpApi:
+          path: /createLink
+          method: post
+  getAll:
+    handler: src/Links/get-links-by-id.handler
+    events:
+      - httpApi:
+          path: /getAll
+          method: get
+
+custom:
+  dotenv:
+    path: environment/${opt:stage, self:custom.default}.env
+  default: 'local'
+
+resources:
+  Resources:
+    DynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.TABLE_NAME}
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        AttributeDefinitions:
+          - AttributeName: linkId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: linkId
+            KeyType: HASH
