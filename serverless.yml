@@ -19,48 +19,102 @@ provider:
         - dynamodb:PutItem
       Resource: arn:aws:dynamodb:us-east-1:992909816699:table/Links
 
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: arn:aws:dynamodb:us-east-1:992909816699:table/Users
+  httpApi:
+    authorizers:
+      customAuthorizer:
+        type: request
+        functionName: authorizerFunc
+        enableSimpleResponses: true
+        identitySource:
+          - $request.header.authorization
+
 plugins:
   - serverless-plugin-typescript
-  - serverless-dotenv-plugin
   - serverless-offline
 
 package:
   individually: true
   patterns:
-    - '!node_modules/**'
+    - 'node_modules/**'
 
 functions:
+  signUp:
+    handler: src/func/auth/sign-up.handler
+    events:
+      - httpApi:
+          path: /signUp
+          method: post
+  signIn:
+    handler: src/func/auth/sign-in.handler
+    events:
+      - httpApi:
+          path: /signIn
+          method: post
   createLink:
-    handler: src/Links/create-link.handler
+    handler: src/func/links/create-link.handler
     events:
       - httpApi:
           path: /createLink
           method: post
-  getAll:
-    handler: src/Links/get-links-by-id.handler
+          authorizer:
+            name: customAuthorizer
+  getById:
+    handler: src/func/links/get-links-by-id.handler
     events:
       - httpApi:
-          path: /getAll
+          path: /getById
           method: get
+          authorizer:
+            name: customAuthorizer
+  redirect:
+    handler: src/func/links/redirect.handler
+    events:
+      - httpApi:
+          path: /{linkId}
+          method: get
+
+  authorizerFunc:
+    handler: src/func/auth/authorizer.handler
 
 custom:
   dotenv:
     path: environment/${opt:stage, self:custom.default}.env
   default: 'local'
+  serverless-offline:
+    noPrependStageInUrl: true
+    noAuth: true
 
 resources:
   Resources:
-    DynamoDbTable:
+    LinkTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.TABLE_NAME}
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
         AttributeDefinitions:
           - AttributeName: linkId
             AttributeType: S
         KeySchema:
           - AttributeName: linkId
             KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Users
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5

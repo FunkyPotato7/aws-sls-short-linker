@@ -7,9 +7,13 @@
     "@aws-sdk/lib-dynamodb": "^3.450.0",
     "@types/aws-lambda": "^8.10.126",
     "@types/aws-sdk": "^2.7.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/uuid": "^9.0.7",
     "serverless-dotenv-plugin": "^6.0.0",
     "serverless-offline": "^13.2.1",
-    "serverless-plugin-typescript": "^2.1.5"
+    "serverless-plugin-typescript": "^2.1.5",
+    "serverless-webpack": "^5.13.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,5 +23,10 @@
     "deploy:prod": "sls deploy --stage prod"
   },
   "author": "Andrew Buno",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  }
 }
