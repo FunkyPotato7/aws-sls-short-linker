@@ -1,14 +1,28 @@
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import {DynamoDBDocument, PutCommand, ScanCommand} from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument, PutCommand, ScanCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 
 import { APIError } from '../errors/APIError';
 
 const dynamodb = DynamoDBDocument.from(new DynamoDB());
 
+const getById = async (id: string) => {
+    try {
+        const command = new GetCommand({
+            TableName: process.env.TABLE_NAME_Users,
+            Key: {
+                id,
+            },
+        });
+        return await dynamodb.send(command);
+    } catch (e) {
+        throw new APIError(e.message, e.$metadata.httpStatusCode);
+    }
+};
+
 const getOne = async (email: string) => {
     try {
         const command = new ScanCommand({
-            TableName: 'Users',
+            TableName: process.env.TABLE_NAME_Users,
             FilterExpression: 'email = :email',
             ExpressionAttributeValues: { ':email': email },
         });
@@ -22,12 +36,12 @@ const getOne = async (email: string) => {
 const create = async (id: string, email: string, password: string) => {
     try {
         const command = new PutCommand({
-            TableName: 'Users',
+            TableName: process.env.TABLE_NAME_Users,
             Item: {
                 id,
                 email,
                 password,
-                created_at: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
             }
         });
 
@@ -38,6 +52,7 @@ const create = async (id: string, email: string, password: string) => {
 };
 
 export {
+    getById,
     getOne,
     create,
 };

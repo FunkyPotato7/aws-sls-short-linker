@@ -36,7 +36,7 @@ const verifyTokens = (token: string, tokenType = 'access') => {
 
         return jwt.verify(token, key);
     } catch (e) {
-        throw new APIError("Unauthorized", 401);
+        throw new APIError('Unauthorized', 401);
     }
 };
 

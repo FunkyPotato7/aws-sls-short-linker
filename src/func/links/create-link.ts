@@ -1,36 +1,28 @@
 import { linkService } from '../../services';
-import {APIError} from "../../errors/APIError";
+import { linkValidator } from '../../validator/link.validator';
 
-const createLink = async (event: any, context: any, callback: any) => {
+const createLink = async (event: any) => {
     try {
         const { body, headers, requestContext } = event;
-        const { link, expiresIn } = JSON.parse(body);
         const userId = requestContext.authorizer.lambda.userId;
         const linkId = (Math.random() + 1).toString(36).substring(7);
 
-        if (!link || !expiresIn) {
-            throw new APIError('Link and expiresIn are required', 400);
-        }
+        const { link, expiresIn } = await linkValidator(JSON.parse(body));
 
         await linkService.create(linkId, link, expiresIn, userId);
 
-        const response = {
+        return {
             statusCode: 200,
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ shortLink: `https://${headers.host}/${linkId}` }),
         };
-        callback(null, response);
     } catch (e) {
-        const response = {
+        return {
             statusCode: e.status,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-            },
             body: JSON.stringify(e),
         };
-        callback(response, null);
     }
 };
 

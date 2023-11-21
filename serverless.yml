@@ -7,16 +7,18 @@ provider:
   region: us-east-1
   stage: ${opt:stage, self:custom.default}
   environment:
-    TABLE_NAME: Links
-    ACCESS_KEY_ID: ${env.ACCESS_KEY_ID}
-    SECRET_ACCESS_KEY: ${env.SECRET_ACCESS_KEY}
-    REGION: ${env.REGION}
+    TABLE_NAME_LINKS: Links
+    TABLE_NAME_USERS: Users
+    SQS_QUEUE_NAME: EmailQueue
+    ACCOUNT_ID: 992909816699
+    REGION: us-east-1
   iamRoleStatements:
     - Effect: Allow
       Action:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
+        - dynamodb:UpdateItem
       Resource: arn:aws:dynamodb:us-east-1:992909816699:table/Links
 
     - Effect: Allow
@@ -25,6 +27,21 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
       Resource: arn:aws:dynamodb:us-east-1:992909816699:table/Users
+    - Effect: Allow
+      Action:
+        - ses:SendEmail
+      Resource: arn:aws:ses:us-east-1:992909816699:identity/andreybuno333@gmail.com
+    - Effect: Allow
+      Action:
+        - ses:SendEmail
+      Resource: arn:aws:ses:us-east-1:992909816699:identity/funkypotato0@gmail.com
+    - Effect: Allow
+      Action:
+        - sqs:sendmessage
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource: arn:aws:sqs:us-east-1:992909816699:EmailQueue
   httpApi:
     authorizers:
       customAuthorizer:
@@ -37,11 +54,11 @@ provider:
 plugins:
   - serverless-plugin-typescript
   - serverless-offline
+  - serverless-dotenv-plugin
+  - serverless-offline-sqs
 
 package:
   individually: true
-  patterns:
-    - 'node_modules/**'
 
 functions:
   signUp:
@@ -78,13 +95,33 @@ functions:
       - httpApi:
           path: /{linkId}
           method: get
+  deactivateLinkById:
+    handler: src/func/links/deactivate-link-by-id.handler
+    events:
+      - httpApi:
+          path: /deactivate
+          method: post
+  deactivateLinks:
+    handler: src/func/links/deactivate-links.handler
+    events:
+      - eventBridge:
+          schedule: rate(1 minute)
+  sendEmail:
+    handler: src/func/email/send-email.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSQueue
+              - Arn
+          batchSize: 10
 
   authorizerFunc:
     handler: src/func/auth/authorizer.handler
 
 custom:
   dotenv:
-    path: environment/${opt:stage, self:custom.default}.env
+    path: environment/prod.env
   default: 'local'
   serverless-offline:
     noPrependStageInUrl: true
@@ -95,7 +132,7 @@ resources:
     LinkTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.TABLE_NAME}
+        TableName: Links
         AttributeDefinitions:
           - AttributeName: linkId
             AttributeType: S
@@ -118,3 +155,11 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+    SQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: EmailQueue
+    EmailIdentity:
+      Type: AWS::SES::EmailIdentity
+      Properties:
+        EmailIdentity: andreybuno333@gmail.com

@@ -1,11 +1,12 @@
 import { v4 as uuidV4 } from 'uuid';
 
-import { authService, userService } from '../../services';
 import { APIError } from '../../errors/APIError';
+import { authService, userService } from '../../services';
+import { authValidator } from '../../validator/auth.validator';
 
 const signUp = async (event: any) => {
     try {
-        const { email, password } = JSON.parse(event.body);
+        const { email, password } = await authValidator(JSON.parse(event.body));
 
         const hashedPassword = await authService.hashPassword(password);
 

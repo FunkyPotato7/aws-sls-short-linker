@@ -1,9 +1,10 @@
-import { authService, userService } from '../../services';
 import { APIError } from '../../errors/APIError';
+import { authService, userService } from '../../services';
+import { authValidator } from "../../validator/auth.validator";
 
 const signIn = async (event: any) => {
     try {
-        const { email, password } = JSON.parse(event.body);
+        const { email, password } = await authValidator(JSON.parse(event.body));
 
         const { Items } = await userService.getOne(email);
 
@@ -31,9 +32,6 @@ const signIn = async (event: any) => {
     } catch (e) {
         return {
             statusCode: e.status,
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify(e),
         };
     }
