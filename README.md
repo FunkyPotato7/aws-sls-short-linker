@@ -1,28 +1,22 @@
-<!--
-title: 'AWS Simple HTTP Endpoint example in NodeJS'
-description: 'This template demonstrates how to make a simple HTTP API with Node.js running on AWS Lambda and API Gateway using the Serverless Framework.'
-layout: Doc
-framework: v3
-platform: AWS
-language: nodeJS
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
--->
+# Serverless shortLinker API
 
-# Serverless Framework Node HTTP API on AWS
-
-This template demonstrates how to make a simple HTTP API with Node.js running on AWS Lambda and API Gateway using the Serverless Framework.
-
-This template does not include any kind of persistence (database). For more advanced examples, check out the [serverless/examples repository](https://github.com/serverless/examples/) which includes Typescript, Mongo, DynamoDB and other examples.
+This API was created to make your long-long links shorter.
 
 ## Usage
 
+Firstly, to deploy this project, you need to have your `env` file with the correct variables in `environments` folder. Check `.env.exapmle`
+to see what variables do you need.
+
 ### Deployment
 
+Run this script:
+
 ```
-$ serverless deploy
+npm run deploy:prod
 ```
+
+_Note_: the option `prod` is the stage of project. Depending on which env file you have prod.env or local.env you need to
+provide right option. Example: `local.env => deploy:local`.
 
 After deploying, you should see output similar to:
 
@@ -36,57 +30,82 @@ functions:
   hello: aws-node-http-api-project-dev-hello (1.9 kB)
 ```
 
-_Note_: In current form, after deployment, your API is public and can be invoked by anyone. For production deployments, you might want to configure an authorizer. For details on how to do that, refer to [http event docs](https://www.serverless.com/framework/docs/providers/aws/events/apigateway/).
+### Local development
+
+You can also run this project locally by using the following command:
+
+```bash
+npm run start:prod
+```
+After successful start, you should see output:
+
+```bash
+   │   POST | http://localhost:3000/2015-03-31/functions/getById/invocations              │
+   │   GET  | http://localhost:3000/{linkId}                                              │
+   │   POST | http://localhost:3000/2015-03-31/functions/redirect/invocations             │
+   │   POST | http://localhost:3000/deactivate                                            │
+   │   POST | http://localhost:3000/2015-03-31/functions/deactivateLinkById/invocations   │
+   │                                                                                      │
+   └──────────────────────────────────────────────────────────────────────────────────────┘
+
+Server ready: http://localhost:3000 🚀
+```
+**WARNING**: When you run project locally, lambda authorizer will not work, but for some endpoints you need user id,
+which you get form authorizer. So you need to hardcode user id for proper work of project.
 
 ### Invocation
 
-After successful deployment, you can call the created application via HTTP:
+After successful deployment, you can call the created application.
 
-```bash
-curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/
-```
+You have 6 endpoint to work with:
 
-Which should result in response similar to the following (removed `input` content for brevity):
+* /signUp - creating new user
+* /signIn - login in to your account
+* /createLink - create new short link
+* /getById - get all links of user
+* /deactivate - deactivate link by id
+* /{linkId} - redirect to your source
 
-```json
-{
-  "message": "Go Serverless v2.0! Your function executed successfully!",
-  "input": {
-    ...
-  }
-}
-```
+## Project structure
 
-### Local development
+├── environments/
 
-You can invoke your function locally by using the following command:
+├── src/
 
-```bash
-serverless invoke local --function hello
-```
+│ │ └── enums/
 
-Which should result in response similar to the following:
+│ │ └── errors/
 
-```
-{
-  "statusCode": 200,
-  "body": "{\n  \"message\": \"Go Serverless v3.0! Your function executed successfully!\",\n  \"input\": \"\"\n}"
-}
-```
+│ ├── func/
 
+│ │ └── auth/
 
-Alternatively, it is also possible to emulate API Gateway and Lambda locally by using `serverless-offline` plugin. In order to do that, execute the following command:
+│ │ └── email/
 
-```bash
-serverless plugin install -n serverless-offline
-```
+│ │ └── links/
 
-It will add the `serverless-offline` plugin to `devDependencies` in `package.json` file as well as will add it to `plugins` in `serverless.yml`.
+│ ├── services/
 
-After installation, you can start local emulation with:
+│ └── types/
 
-```
-serverless offline
-```
+│ └── validators/
 
-To learn more about the capabilities of `serverless-offline`, please refer to its [GitHub repository](https://github.com/dherault/serverless-offline).
+└──
+
+├── swagger/
+
+* environments - a directory with env files
+* src - main directory
+    * enums - directory with enums files    
+    * errors - directory with custom errors  
+    * func - directory with all lambda functions
+      * auth - all lambda functions related with authorization
+      * email - directory with lambda function for email service
+      * links - all lambda functions related with links
+    * services - directory with all service functions (dynamodb requests, sqs client)
+    * type - directory with type interfaces
+    * validators - directory with validators for incoming body
+* swagger - swagger directory, with required files for documentation
+
+For better understanding how make requests, go to this endpoint and read docs:
+https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/swagger

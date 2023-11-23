@@ -6,7 +6,7 @@ const dynamodb = DynamoDBDocument.from(new DynamoDBClient({}));
 
 const getAll = async () => {
     const command = new ScanCommand({
-        TableName: process.env.TABLE_NAME_Links,
+        TableName: process.env.TABLE_NAME_LINKS,
     });
 
     return await dynamodb.send(command);
@@ -14,7 +14,7 @@ const getAll = async () => {
 
 const getOne = async (userId: string) => {
     const command = new ScanCommand({
-        TableName: process.env.TABLE_NAME_Links,
+        TableName: process.env.TABLE_NAME_LINKS,
         FilterExpression: 'userId = :userId',
         ExpressionAttributeValues: { ':userId': userId },
     });
@@ -24,7 +24,7 @@ const getOne = async (userId: string) => {
 
 const getById = async (linkId: string) => {
     const command = new GetCommand({
-        TableName: process.env.TABLE_NAME_Links,
+        TableName: process.env.TABLE_NAME_LINKS,
         Key: {
             linkId,
         },
@@ -36,7 +36,7 @@ const getById = async (linkId: string) => {
 const create = async (linkId: string, link: string, expiresIn: string | undefined = '', userId: string) => {
     try {
         const command = new PutCommand({
-            TableName: process.env.TABLE_NAME_Links,
+            TableName: process.env.TABLE_NAME_LINKS,
             Item: {
                 linkId,
                 originalLink: link.toString(),
@@ -58,15 +58,16 @@ const create = async (linkId: string, link: string, expiresIn: string | undefine
 const update = async (linkId: string, fieldToUpdate: string, value: string | boolean | number) => {
     try {
         const command = new UpdateCommand({
-            TableName: process.env.TABLE_NAME_Links,
+            TableName: process.env.TABLE_NAME_LINKS,
             Key: {
                 linkId,
             },
             UpdateExpression: `set ${fieldToUpdate} = :value`,
+            ConditionExpression: 'attribute_exists(linkId) AND active = :active',
             ExpressionAttributeValues: {
                 ':value': value,
+                ':active': true
             },
-            ConditionExpression: 'attribute_exists(linkId)',
             ReturnValues: 'ALL_NEW',
         });
         return await dynamodb.send(command);

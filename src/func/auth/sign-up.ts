@@ -2,10 +2,13 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { APIError } from '../../errors/APIError';
 import { authService, userService } from '../../services';
-import { authValidator } from '../../validator/auth.validator';
+import { authValidator } from '../../validators/auth.validator';
 
 const signUp = async (event: any) => {
     try {
+        if (!event.body) {
+            throw new APIError('Body data is required', 400);
+        }
         const { email, password } = await authValidator(JSON.parse(event.body));
 
         const hashedPassword = await authService.hashPassword(password);
@@ -16,8 +19,9 @@ const signUp = async (event: any) => {
             throw new APIError(`User with email ${email} already exist`, 400);
         }
 
-        await userService.create(uuidV4(), email, hashedPassword);
-        const tokens = authService.generateAccessTokenPair({ id: uuidV4() })
+        const id = uuidV4();
+        await userService.create(id, email, hashedPassword);
+        const tokens = authService.generateAccessTokenPair({ id })
         return {
             statusCode: 200,
             headers: {

@@ -1,9 +1,12 @@
 import { APIError } from '../../errors/APIError';
 import { authService, userService } from '../../services';
-import { authValidator } from "../../validator/auth.validator";
+import { authValidator } from '../../validators/auth.validator';
 
 const signIn = async (event: any) => {
     try {
+        if (!event.body) {
+            throw new APIError('Body data is required', 400);
+        }
         const { email, password } = await authValidator(JSON.parse(event.body));
 
         const { Items } = await userService.getOne(email);
@@ -20,7 +23,7 @@ const signIn = async (event: any) => {
             throw new APIError('Wrong email or password', 400);
         }
 
-        const tokens = authService.generateAccessTokenPair({ id: user.id});
+        const tokens = authService.generateAccessTokenPair({ id: user.id });
 
         return {
             statusCode: 200,
@@ -32,6 +35,9 @@ const signIn = async (event: any) => {
     } catch (e) {
         return {
             statusCode: e.status,
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify(e),
         };
     }

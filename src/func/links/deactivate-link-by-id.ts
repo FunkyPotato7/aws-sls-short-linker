@@ -5,7 +5,7 @@ const deactivateLinkById = async (event: any) => {
     try {
         const { body } = event;
         if (!body) {
-            throw new APIError("Field 'linkId' is required", 400);
+            throw new APIError("Body data is required", 400);
         }
 
         const { linkId } = JSON.parse(body);

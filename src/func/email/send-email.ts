@@ -5,7 +5,7 @@ import { userService } from '../../services';
 
 const sesClient = new SESClient({ region: process.env.REGION });
 
-const createSendEmailCommand = (fromAddress: string, toAddress: string, item: any) => {
+const createSendEmailCommand = (fromAddress: string | undefined, toAddress: string, item: any) => {
     return new SendEmailCommand({
         Destination: {
             ToAddresses: [
@@ -35,7 +35,7 @@ const sendEmail = async (event: any) => {
             const { Item } = await userService.getById(userId);
 
             const sendEmailCommand = createSendEmailCommand(
-                "andreybuno333@gmail.com",
+                process.env.SES_EMAIL,
                 Item?.email,
                 link,
             );

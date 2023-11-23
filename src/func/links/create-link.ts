@@ -1,5 +1,5 @@
 import { linkService } from '../../services';
-import { linkValidator } from '../../validator/link.validator';
+import { linkValidator } from '../../validators/link.validator';
 
 const createLink = async (event: any) => {
     try {

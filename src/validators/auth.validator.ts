@@ -1,14 +1,15 @@
 import * as yup from 'yup';
 
 import { APIError } from '../errors/APIError';
-import regexPatterns = require('../enums/regexp.enum');
+import { EMAIL } from '../enums/regexp.enum';
+import { ICredentials } from '../types/auth';
 
 const authSchema = yup.object().shape({
-    email: yup.string().matches(regexPatterns.EMAIL).required(),
+    email: yup.string().matches(EMAIL).lowercase().trim().required(),
     password: yup.string().required()
 });
 
-const authValidator = async (body: any) => {
+const authValidator = async (body: ICredentials) => {
     try {
         return await authSchema.validate(body || {});
     } catch (e) {

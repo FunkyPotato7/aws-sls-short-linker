@@ -6,12 +6,6 @@ provider:
   runtime: nodejs18.x
   region: us-east-1
   stage: ${opt:stage, self:custom.default}
-  environment:
-    TABLE_NAME_LINKS: Links
-    TABLE_NAME_USERS: Users
-    SQS_QUEUE_NAME: EmailQueue
-    ACCOUNT_ID: 992909816699
-    REGION: us-east-1
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -52,6 +46,7 @@ provider:
           - $request.header.authorization
 
 plugins:
+  - serverless-auto-swagger
   - serverless-plugin-typescript
   - serverless-offline
   - serverless-dotenv-plugin
@@ -59,6 +54,8 @@ plugins:
 
 package:
   individually: true
+  include:
+    - node_modules/**
 
 functions:
   signUp:
@@ -67,12 +64,30 @@ functions:
       - httpApi:
           path: /signUp
           method: post
+          swaggerTags: ['Auth']
+          bodyType: ICredentials
+          responses:
+            200:
+              description: Successful response,
+              bodyType: ITokens
+            400:
+              description: Bad request,
+              bodyType: IError
   signIn:
     handler: src/func/auth/sign-in.handler
     events:
       - httpApi:
           path: /signIn
           method: post
+          swaggerTags: ['Auth']
+          bodyType: ICredentials
+          responses:
+            200:
+              description: Successful response,
+              bodyType: ITokens
+            400:
+              description: Bad request,
+              bodyType: IError
   createLink:
     handler: src/func/links/create-link.handler
     events:
@@ -81,6 +96,18 @@ functions:
           method: post
           authorizer:
             name: customAuthorizer
+          swaggerTags: ['Links']
+          bodyType: ILink
+          responses:
+            200:
+              description: Successful response,
+              bodyType: IShortLink
+            400:
+              description: Bad request,
+              bodyType: IError
+            401:
+              description: Unauthorized request,
+              bodyType: IUnauthorized
   getById:
     handler: src/func/links/get-links-by-id.handler
     events:
@@ -89,18 +116,46 @@ functions:
           method: get
           authorizer:
             name: customAuthorizer
+          swaggerTags: ['Links']
+          responses:
+            200:
+              description: Successful response,
+              bodyType: IShortLink
+            400:
+              description: Bad request,
+              bodyType: IError
+            401:
+              description: Unauthorized request,
+              bodyType: IUnauthorized
   redirect:
     handler: src/func/links/redirect.handler
     events:
       - httpApi:
           path: /{linkId}
           method: get
+          swaggerTags: ['Links']
+          responses:
+            400:
+              description: Bad request,
+              bodyType: IError
   deactivateLinkById:
     handler: src/func/links/deactivate-link-by-id.handler
     events:
       - httpApi:
           path: /deactivate
           method: post
+          swaggerTags: ['Links']
+          bodyType: ILinkId
+          responses:
+            200:
+              description: Successful response,
+              bodyType: IShortLink
+            400:
+              description: Bad request,
+              bodyType: IError
+            401:
+              description: Unauthorized request,
+              bodyType: IUnauthorized
   deactivateLinks:
     handler: src/func/links/deactivate-links.handler
     events:
@@ -121,8 +176,14 @@ functions:
 
 custom:
   dotenv:
-    path: environment/prod.env
+    path: environments/${opt:stage, self:custom.default}.env
   default: 'local'
+  autoswagger:
+    typefiles: [
+      './src/types/auth.d.ts',
+      './src/types/errors.d.ts',
+      './src/types/links.d.ts'
+    ]
   serverless-offline:
     noPrependStageInUrl: true
     noAuth: true
