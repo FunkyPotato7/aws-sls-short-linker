@@ -29,7 +29,7 @@ const signUp = async (event: any) => {
             },
             body: JSON.stringify(tokens),
         };
-    } catch (e) {
+    } catch (e: any) {
         return {
             statusCode: e.status,
             headers: {
@@ -40,6 +40,4 @@ const signUp = async (event: any) => {
     }
 };
 
-export = {
-    handler: signUp,
-};
+export const handler = signUp;

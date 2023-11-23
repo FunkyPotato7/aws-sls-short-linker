@@ -28,7 +28,7 @@ const deactivateLinks = async () => {
         return {
             success: true,
         };
-    } catch (e) {
+    } catch (e: any) {
         return {
             statusCode: e.status || e.statusCode,
             body: JSON.stringify(e),
@@ -36,6 +36,4 @@ const deactivateLinks = async () => {
     }
 };
 
-export = {
-    handler: deactivateLinks,
-};
+export const handler = deactivateLinks;

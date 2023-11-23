@@ -3,4 +3,4 @@ const regexPatterns = {
     URL: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
 };
 
-export = regexPatterns;
+export default regexPatterns;

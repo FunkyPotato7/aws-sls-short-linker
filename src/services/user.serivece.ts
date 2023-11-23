@@ -14,7 +14,7 @@ const getById = async (id: string) => {
             },
         });
         return await dynamodb.send(command);
-    } catch (e) {
+    } catch (e: any) {
         throw new APIError(e.message, e.$metadata.httpStatusCode);
     }
 };
@@ -28,7 +28,7 @@ const getOne = async (email: string) => {
         });
 
         return await dynamodb.send(command);
-    } catch (e) {
+    } catch (e: any) {
         throw new APIError(e.message, e.$metadata.httpStatusCode);
     }
 };
@@ -46,7 +46,7 @@ const create = async (id: string, email: string, password: string) => {
         });
 
         await dynamodb.send(command);
-    } catch (e) {
+    } catch (e: any) {
         throw new APIError(e.message, e.$metadata.httpStatusCode);
     }
 };

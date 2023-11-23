@@ -32,7 +32,7 @@ const signIn = async (event: any) => {
             },
             body: JSON.stringify(tokens),
         };
-    } catch (e) {
+    } catch (e: any) {
         return {
             statusCode: e.status,
             headers: {
@@ -43,6 +43,4 @@ const signIn = async (event: any) => {
     }
 };
 
-export = {
-    handler: signIn,
-};
+export const handler = signIn;

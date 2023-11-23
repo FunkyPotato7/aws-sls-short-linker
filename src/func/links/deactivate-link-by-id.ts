@@ -14,7 +14,6 @@ const deactivateLinkById = async (event: any) => {
         }
 
         const { Attributes } = await linkService.update(linkId, 'active', false);
-        console.log(Attributes);
 
         await sqsService.sendMessage({ link: Attributes, userId: Attributes?.userId });
 
@@ -25,7 +24,7 @@ const deactivateLinkById = async (event: any) => {
             },
             body: JSON.stringify(Attributes),
         };
-    } catch (e) {
+    } catch (e: any) {
         return {
             statusCode: e.status,
             headers: {
@@ -36,6 +35,4 @@ const deactivateLinkById = async (event: any) => {
     }
 };
 
-export = {
-    handler: deactivateLinkById,
-};
+export const handler = deactivateLinkById;

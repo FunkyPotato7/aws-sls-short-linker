@@ -4,19 +4,18 @@ import { APIError } from '../../errors/APIError';
 const authorizer = async (event: any) => {
     try {
         const token = event.headers.authorization.split(' ')[1];
-        const decoded = authService.verifyTokens(token);
+        const tokenInfo = authService.verifyTokens(token);
         return {
             "isAuthorized": true,
             "context": {
-                'userId': decoded['id'],
+                'tokenInfo': tokenInfo,
             }
         };
     }
-    catch (e) {
+    catch (e: any) {
         throw new APIError('Unauthorized', 401);
     }
 };
 
-export = {
-    handler: authorizer,
-};
+
+export const handler = authorizer;

@@ -14,7 +14,7 @@ const sendMessage = async (data = {}) => {
         });
 
         await client.send(command);
-    } catch (e) {
+    } catch (e: any) {
         throw new APIError(e.message, e.$metadata.httpStatusCode);
     }
 };

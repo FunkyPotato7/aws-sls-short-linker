@@ -46,16 +46,14 @@ provider:
           - $request.header.authorization
 
 plugins:
+  - serverless-esbuild
   - serverless-auto-swagger
-  - serverless-plugin-typescript
   - serverless-offline
   - serverless-dotenv-plugin
   - serverless-offline-sqs
 
 package:
   individually: true
-  include:
-    - node_modules/**
 
 functions:
   signUp:
@@ -67,6 +65,7 @@ functions:
           swaggerTags: ['Auth']
           bodyType: ICredentials
           responses:
+            default: {}
             200:
               description: Successful response,
               bodyType: ITokens
@@ -82,6 +81,7 @@ functions:
           swaggerTags: ['Auth']
           bodyType: ICredentials
           responses:
+            default: {}
             200:
               description: Successful response,
               bodyType: ITokens
@@ -99,6 +99,7 @@ functions:
           swaggerTags: ['Links']
           bodyType: ILink
           responses:
+            default: {}
             200:
               description: Successful response,
               bodyType: IShortLink
@@ -118,6 +119,7 @@ functions:
             name: customAuthorizer
           swaggerTags: ['Links']
           responses:
+            default: {}
             200:
               description: Successful response,
               bodyType: IShortLink
@@ -135,6 +137,7 @@ functions:
           method: get
           swaggerTags: ['Links']
           responses:
+            default: {}
             400:
               description: Bad request,
               bodyType: IError
@@ -147,6 +150,7 @@ functions:
           swaggerTags: ['Links']
           bodyType: ILinkId
           responses:
+            default: {}
             200:
               description: Successful response,
               bodyType: IShortLink
@@ -175,6 +179,9 @@ functions:
     handler: src/func/auth/authorizer.handler
 
 custom:
+  esbuild:
+    bundle: true
+    minify: false
   dotenv:
     path: environments/${opt:stage, self:custom.default}.env
   default: 'local'

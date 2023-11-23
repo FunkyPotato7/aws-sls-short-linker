@@ -49,7 +49,7 @@ const create = async (linkId: string, link: string, expiresIn: string | undefine
         });
 
         await dynamodb.send(command);
-    } catch (e) {
+    } catch (e: any) {
         throw new APIError(e.message, e.$metadata.httpStatusCode);
     }
 
@@ -71,7 +71,7 @@ const update = async (linkId: string, fieldToUpdate: string, value: string | boo
             ReturnValues: 'ALL_NEW',
         });
         return await dynamodb.send(command);
-    } catch (e) {
+    } catch (e: any) {
         throw new APIError(`Link with id: '${linkId}' is not exist`, 404);
     }
 };

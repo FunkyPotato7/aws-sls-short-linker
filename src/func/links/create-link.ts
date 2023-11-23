@@ -4,12 +4,13 @@ import { linkValidator } from '../../validators/link.validator';
 const createLink = async (event: any) => {
     try {
         const { body, headers, requestContext } = event;
-        const userId = requestContext.authorizer.lambda.userId;
+        const { id } = requestContext.authorizer.lambda.tokenInfo;
+
         const linkId = (Math.random() + 1).toString(36).substring(7);
 
         const { link, expiresIn } = await linkValidator(JSON.parse(body));
 
-        await linkService.create(linkId, link, expiresIn, userId);
+        await linkService.create(linkId, link, expiresIn, id);
 
         return {
             statusCode: 200,
@@ -18,7 +19,7 @@ const createLink = async (event: any) => {
             },
             body: JSON.stringify({ shortLink: `https://${headers.host}/${linkId}` }),
         };
-    } catch (e) {
+    } catch (e: any) {
         return {
             statusCode: e.status,
             body: JSON.stringify(e),
@@ -26,6 +27,4 @@ const createLink = async (event: any) => {
     }
 };
 
-export = {
-    handler: createLink,
-};
+export const handler = createLink;

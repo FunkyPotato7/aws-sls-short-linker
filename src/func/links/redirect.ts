@@ -23,7 +23,7 @@ const redirect = async (event: any) => {
                 Location: originalLink,
             },
         };
-    } catch (e) {
+    } catch (e: any) {
         return {
             statusCode: e.status,
             body: JSON.stringify(e),
@@ -31,6 +31,4 @@ const redirect = async (event: any) => {
     }
 };
 
-export = {
-    handler: redirect,
-};
+export const handler = redirect;

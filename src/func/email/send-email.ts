@@ -16,12 +16,12 @@ const createSendEmailCommand = (fromAddress: string | undefined, toAddress: stri
             Body: {
                 Text: {
                     Charset: "UTF-8",
-                    Data: `Your link ${item.linkId} has been expired`,
+                    Data: `Your link ${item.linkId} has been deactivated`,
                 },
             },
             Subject: {
                 Charset: "UTF-8",
-                Data: `Your link is expired`,
+                Data: `Your link is deactivated`,
             },
         },
         Source: fromAddress,
@@ -47,7 +47,7 @@ const sendEmail = async (event: any) => {
             statusCode: 201,
             body: "Emails sent successfully",
         };
-    } catch (e) {
+    } catch (e: any) {
         return {
             statusCode: e.status,
             body: JSON.stringify(e),
@@ -55,6 +55,5 @@ const sendEmail = async (event: any) => {
     }
 };
 
-export = {
-   handler: sendEmail,
-};
+export const handler = sendEmail;
+
